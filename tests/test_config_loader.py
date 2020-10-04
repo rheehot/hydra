@@ -7,8 +7,9 @@ from typing import Any, Dict, List
 import pytest
 from omegaconf import MISSING, OmegaConf, ValidationError, open_dict
 
-from hydra._internal.config_loader_impl import ConfigLoaderImpl, DefaultElement
+from hydra._internal.config_loader_impl import ConfigLoaderImpl
 from hydra._internal.utils import create_config_search_path
+from hydra.core import DefaultElement
 from hydra.core.config_loader import LoadTrace
 from hydra.core.config_store import ConfigStore, ConfigStoreWithProvider
 from hydra.core.override_parser.overrides_parser import OverridesParser
@@ -18,6 +19,7 @@ from hydra.errors import (
     HydraException,
     MissingConfigException,
 )
+from hydra.plugins.config_source import ConfigSource
 from hydra.test_utils.test_utils import chdir_hydra_root
 from hydra.types import RunMode
 from tests import UserGroup
@@ -545,6 +547,8 @@ def test_merge_default_lists(
         ("config.yaml", ["~hydra/launcher"]),
         # remove from both
         ("removing-hydra-launcher-default.yaml", ["~hydra/launcher"]),
+        # TODO: in new defaults list, behavior is changing for this
+        #  and it should also delete the hydra/launcher=basic
         # second overrides removes
         ("config.yaml", ["hydra/launcher=submitit", "~hydra/launcher"]),
     ],
@@ -1044,14 +1048,14 @@ defaults_list = [{"db": "mysql"}, {"db@src": "mysql"}, {"hydra/launcher": "basic
 def test_apply_overrides_to_defaults(
     input_defaults: List[str], overrides: List[str], expected: Any
 ) -> None:
-    defaults = ConfigLoaderImpl._parse_defaults(
+    defaults = ConfigSource._extract_defaults_list(
         OmegaConf.create({"defaults": input_defaults})
     )
 
     parser = OverridesParser.create()
     if isinstance(expected, list):
         parsed_overrides = parser.parse_overrides(overrides=overrides)
-        expected_defaults = ConfigLoaderImpl._parse_defaults(
+        expected_defaults = ConfigSource._extract_defaults_list(
             OmegaConf.create({"defaults": expected})
         )
         ConfigLoaderImpl._apply_overrides_to_defaults(
@@ -1073,7 +1077,7 @@ def test_delete_by_assigning_null_is_deprecated() -> None:
         "\nUse ~db"
     )
 
-    defaults = ConfigLoaderImpl._parse_defaults(
+    defaults = ConfigSource._extract_defaults_list(
         OmegaConf.create({"defaults": [{"db": "mysql"}]})
     )
 

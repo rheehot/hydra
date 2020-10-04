@@ -1,7 +1,6 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
 import copy
 import logging
-import os
 import string
 import sys
 import warnings
@@ -104,6 +103,7 @@ class Hydra:
             run_mode=RunMode.RUN,
         )
         HydraConfig.instance().set_config(cfg)
+
         return run_job(
             config=cfg,
             task_function=task_function,
@@ -128,6 +128,7 @@ class Hydra:
             run_mode=RunMode.MULTIRUN,
         )
         HydraConfig.instance().set_config(cfg)
+
         sweeper = Plugins.instance().instantiate_sweeper(
             config=cfg, config_loader=self.config_loader, task_function=task_function
         )
@@ -366,7 +367,8 @@ class Hydra:
                 Hydra._log_header(header=f"{plugin_type.__name__}:", prefix="\t")
                 for plugin in plugins:
                     log.debug("\t\t{}".format(plugin.__name__))
-                    all_plugins.remove(plugin.__name__)
+                    if plugin.__name__ in all_plugins:
+                        all_plugins.remove(plugin.__name__)
 
         if len(all_plugins) > 0:
             Hydra._log_header(header="Generic plugins: ", prefix="\t")
@@ -511,11 +513,6 @@ class Hydra:
             run_mode=run_mode,
             from_shell=from_shell,
         )
-        with open_dict(cfg):
-            from hydra import __version__
-
-            cfg.hydra.runtime.version = __version__
-            cfg.hydra.runtime.cwd = os.getcwd()
         if with_log_configuration:
             configure_log(cfg.hydra.hydra_logging, cfg.hydra.verbose)
             global log

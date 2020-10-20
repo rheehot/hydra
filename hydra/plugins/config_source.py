@@ -28,7 +28,6 @@ class ConfigResult:
     path: str
     config: Container
     header: Dict[str, str]
-    # TODO: add tests to config sources covering this
     defaults_list: List[DefaultElement]
     is_schema_source: bool = False
 

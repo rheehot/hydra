@@ -160,11 +160,13 @@ def _validate_self(element: DefaultElement, defaults: DefaultsList) -> None:
             assert d.config_group is None
             d.config_group = element.config_group
             d.package = element.package
+            d.parent = element.parent
 
     if not has_self:
         me = copy.deepcopy(element)
         me.config_name = "_self_"
         me.from_override = False
+        me.parent = element.parent
         defaults.effective.insert(0, me)
 
 
@@ -494,6 +496,7 @@ def convert_overrides_to_defaults(
                 package=override.pkg1,
                 package2=override.pkg2,
                 from_override=True,
+                parent="overrides",
             )
         else:
             default = DefaultElement(
@@ -501,6 +504,7 @@ def convert_overrides_to_defaults(
                 config_name=value,
                 package=override.get_subject_package(),
                 from_override=True,
+                parent="overrides",
             )
 
         if override.is_delete():

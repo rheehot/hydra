@@ -31,14 +31,14 @@ Plugins.instance()
     "element,expected",
     [
         pytest.param(
-            DefaultElement(config_name="no_defaults"),
+            DefaultElement(config_name="no_defaults", parent="this_test"),
             [
-                DefaultElement(config_name="no_defaults"),
+                DefaultElement(config_name="no_defaults", parent="this_test"),
             ],
             id="no_defaults",
         ),
         pytest.param(
-            DefaultElement(config_name="duplicate_self"),
+            DefaultElement(config_name="duplicate_self", parent="this_test"),
             pytest.raises(
                 ConfigCompositionException,
                 match="Duplicate _self_ defined in duplicate_self",
@@ -46,26 +46,38 @@ Plugins.instance()
             id="duplicate_self",
         ),
         pytest.param(
-            DefaultElement(config_name="trailing_self"),
+            DefaultElement(config_name="trailing_self", parent="this_test"),
             [
-                DefaultElement(config_name="no_defaults"),
-                DefaultElement(config_name="trailing_self"),
+                DefaultElement(config_name="no_defaults", parent="trailing_self"),
+                DefaultElement(config_name="trailing_self", parent="this_test"),
             ],
             id="trailing_self",
         ),
         pytest.param(
-            DefaultElement(config_name="implicit_leading_self"),
+            DefaultElement(config_name="implicit_leading_self", parent="this_test"),
             [
-                DefaultElement(config_name="implicit_leading_self"),
-                DefaultElement(config_name="no_defaults"),
+                DefaultElement(config_name="implicit_leading_self", parent="this_test"),
+                DefaultElement(
+                    config_name="no_defaults",
+                    parent="implicit_leading_self",
+                ),
             ],
             id="implicit_leading_self",
         ),
         pytest.param(
-            DefaultElement(config_name="explicit_leading_self"),
+            DefaultElement(
+                config_name="explicit_leading_self",
+                parent="this_test",
+            ),
             [
-                DefaultElement(config_name="explicit_leading_self"),
-                DefaultElement(config_name="no_defaults"),
+                DefaultElement(
+                    config_name="explicit_leading_self",
+                    parent="this_test",
+                ),
+                DefaultElement(
+                    config_name="no_defaults",
+                    parent="explicit_leading_self",
+                ),
             ],
             id="explicit_leading_self",
         ),
@@ -105,216 +117,339 @@ Plugins.instance()
             id="b/b1",
         ),
         pytest.param(
-            DefaultElement(config_group="a", config_name="a2"),
+            DefaultElement(config_group="a", config_name="a2", parent="this_test"),
             [
-                DefaultElement(config_group="a", config_name="a2"),
-                DefaultElement(config_group="b", config_name="b1"),
+                DefaultElement(config_group="a", config_name="a2", parent="this_test"),
+                DefaultElement(config_group="b", config_name="b1", parent="a/a2"),
             ],
             id="a/a2",
         ),
         pytest.param(
-            DefaultElement(config_name="recursive_item_explicit_self"),
+            DefaultElement(
+                config_name="recursive_item_explicit_self", parent="this_test"
+            ),
             [
-                DefaultElement(config_name="recursive_item_explicit_self"),
-                DefaultElement(config_group="a", config_name="a2"),
-                DefaultElement(config_group="b", config_name="b1"),
+                DefaultElement(
+                    config_name="recursive_item_explicit_self", parent="this_test"
+                ),
+                DefaultElement(
+                    config_group="a",
+                    config_name="a2",
+                    parent="recursive_item_explicit_self",
+                ),
+                DefaultElement(
+                    config_group="b",
+                    config_name="b1",
+                    parent="a/a2",
+                ),
             ],
             id="recursive_item_explicit_self",
         ),
         pytest.param(
-            DefaultElement(config_name="recursive_item_implicit_self"),
+            DefaultElement(
+                config_name="recursive_item_explicit_self", parent="this_test"
+            ),
             [
-                DefaultElement(config_name="recursive_item_implicit_self"),
-                DefaultElement(config_group="a", config_name="a2"),
-                DefaultElement(config_group="b", config_name="b1"),
+                DefaultElement(
+                    config_name="recursive_item_explicit_self", parent="this_test"
+                ),
+                DefaultElement(
+                    config_group="a",
+                    config_name="a2",
+                    parent="recursive_item_explicit_self",
+                ),
+                DefaultElement(
+                    config_group="b",
+                    config_name="b1",
+                    parent="a/a2",
+                ),
             ],
             id="recursive_item_implicit_self",
         ),
         pytest.param(
-            DefaultElement(config_group="a", config_name="a3"),
+            DefaultElement(config_group="a", config_name="a3", parent="this_test"),
             [
-                DefaultElement(config_group="a", config_name="a3"),
-                DefaultElement(config_group="c", config_name="c2"),
-                DefaultElement(config_group="b", config_name="b2"),
+                DefaultElement(config_group="a", config_name="a3", parent="this_test"),
+                DefaultElement(config_group="c", config_name="c2", parent="a/a3"),
+                DefaultElement(config_group="b", config_name="b2", parent="a/a3"),
             ],
             id="multiple_item_definitions",
         ),
         pytest.param(
-            DefaultElement(config_group="a", config_name="a4"),
+            DefaultElement(config_group="a", config_name="a4", parent="this_test"),
             [
-                DefaultElement(config_group="a", config_name="a4"),
-                DefaultElement(config_group="b", config_name="b1", package="file_pkg"),
+                DefaultElement(config_group="a", config_name="a4", parent="this_test"),
+                DefaultElement(
+                    config_group="b",
+                    config_name="b1",
+                    package="file_pkg",
+                    parent="a/a4",
+                ),
             ],
             id="a/a4_pkg_override_in_config",
         ),
         pytest.param(
-            DefaultElement(config_group="b", config_name="b3"),
+            DefaultElement(config_group="b", config_name="b3", parent="this_test"),
             [
-                DefaultElement(config_group="b", config_name="b3"),
+                DefaultElement(config_group="b", config_name="b3", parent="this_test"),
             ],
             id="b/b3",
         ),
         pytest.param(
-            DefaultElement(config_group="a", config_name="a5"),
+            DefaultElement(config_group="a", config_name="a5", parent="this_test"),
             [
-                DefaultElement(config_group="a", config_name="a5"),
-                DefaultElement(config_group="b", config_name="b3"),
-                DefaultElement(config_group="b", config_name="b3", package="file_pkg"),
+                DefaultElement(config_group="a", config_name="a5", parent="this_test"),
+                DefaultElement(config_group="b", config_name="b3", parent="a/a5"),
+                DefaultElement(
+                    config_group="b",
+                    config_name="b3",
+                    package="file_pkg",
+                    parent="a/a5",
+                ),
             ],
             id="a/a5",
         ),
         pytest.param(
-            DefaultElement(config_group="b", config_name="base_from_a"),
+            DefaultElement(
+                config_group="b", config_name="base_from_a", parent="this_test"
+            ),
             [
-                DefaultElement(config_name="a/a1"),
-                DefaultElement(config_group="b", config_name="base_from_a"),
+                DefaultElement(config_name="a/a1", parent="b/base_from_a"),
+                DefaultElement(
+                    config_group="b",
+                    config_name="base_from_a",
+                    parent="this_test",
+                ),
             ],
             id="b/base_from_a",
         ),
         pytest.param(
-            DefaultElement(config_group="b", config_name="base_from_b"),
+            DefaultElement(
+                config_group="b", config_name="base_from_b", parent="this_test"
+            ),
             [
-                DefaultElement(config_name="b/b1"),
-                DefaultElement(config_group="b", config_name="base_from_b"),
+                DefaultElement(config_name="b/b1", parent="b/base_from_b"),
+                DefaultElement(
+                    config_group="b", config_name="base_from_b", parent="this_test"
+                ),
             ],
             id="b/base_from_b",
         ),
         # rename
         pytest.param(
-            DefaultElement(config_group="rename", config_name="r1"),
+            DefaultElement(config_group="rename", config_name="r1", parent="this_test"),
             [
-                DefaultElement(config_group="rename", config_name="r1"),
-                DefaultElement(config_group="b", package="pkg", config_name="b1"),
+                DefaultElement(
+                    config_group="rename", config_name="r1", parent="this_test"
+                ),
+                DefaultElement(
+                    config_group="b",
+                    package="pkg",
+                    config_name="b1",
+                    parent="rename/r1",
+                ),
             ],
             id="rename_package_from_none",
         ),
         pytest.param(
-            DefaultElement(config_group="rename", config_name="r2"),
+            DefaultElement(config_group="rename", config_name="r2", parent="this_test"),
             [
-                DefaultElement(config_group="rename", config_name="r2"),
-                DefaultElement(config_group="b", package="pkg2", config_name="b1"),
+                DefaultElement(
+                    config_group="rename", config_name="r2", parent="this_test"
+                ),
+                DefaultElement(
+                    config_group="b",
+                    package="pkg2",
+                    config_name="b1",
+                    parent="rename/r2",
+                ),
             ],
             id="rename_package_from_something",
         ),
         pytest.param(
-            DefaultElement(config_group="rename", config_name="r3"),
+            DefaultElement(config_group="rename", config_name="r3", parent="this_test"),
             [
-                DefaultElement(config_group="rename", config_name="r3"),
-                DefaultElement(config_group="b", package="pkg", config_name="b4"),
+                DefaultElement(
+                    config_group="rename", config_name="r3", parent="this_test"
+                ),
+                DefaultElement(
+                    config_group="b",
+                    package="pkg",
+                    config_name="b4",
+                    parent="rename/r3",
+                ),
             ],
-            id="rename_package_from_none_and_change_option",
+            id="rename_package_from_none_and_change_option:r3",
         ),
         pytest.param(
-            DefaultElement(config_group="rename", config_name="r4"),
+            DefaultElement(config_group="rename", config_name="r4", parent="this_test"),
             [
-                DefaultElement(config_group="rename", config_name="r4"),
-                DefaultElement(config_group="b", package="pkg2", config_name="b4"),
+                DefaultElement(
+                    config_group="rename",
+                    config_name="r4",
+                    parent="this_test",
+                ),
+                DefaultElement(
+                    config_group="b",
+                    package="pkg2",
+                    config_name="b4",
+                    parent="rename/r4",
+                ),
             ],
-            id="rename_package_and_change_option",
+            id="rename_package_and_change_option:r4",
         ),
         pytest.param(
-            DefaultElement(config_group="rename", config_name="r5"),
+            DefaultElement(config_group="rename", config_name="r5", parent="this_test"),
             [
-                DefaultElement(config_group="rename", config_name="r5"),
-                DefaultElement(config_name="rename/r4"),
-                DefaultElement(config_group="b", package="pkg2", config_name="b4"),
-                DefaultElement(config_group="a", config_name="a1"),
+                DefaultElement(
+                    config_group="rename",
+                    config_name="r5",
+                    parent="this_test",
+                ),
+                DefaultElement(
+                    config_name="rename/r4",
+                    parent="rename/r5",
+                ),
+                DefaultElement(
+                    config_group="b",
+                    package="pkg2",
+                    config_name="b4",
+                    parent="rename/r4",
+                ),
+                DefaultElement(
+                    config_group="a",
+                    config_name="a1",
+                    parent="rename/r5",
+                ),
             ],
-            id="rename_package_and_change_option",
+            id="rename_package_and_change_option:r5",
         ),
         # delete
         pytest.param(
-            DefaultElement(config_group="delete", config_name="d1"),
+            DefaultElement(config_group="delete", config_name="d1", parent="this_test"),
             [
-                DefaultElement(config_group="delete", config_name="d1"),
+                DefaultElement(
+                    config_group="delete", config_name="d1", parent="this_test"
+                ),
                 DefaultElement(
                     config_group="b",
                     config_name="b1",
                     is_deleted=True,
                     skip_load=True,
                     skip_load_reason="deleted_from_list",
+                    parent="delete/d1",
                 ),
             ],
             id="delete_with_null",
         ),
         pytest.param(
-            DefaultElement(config_group="delete", config_name="d2"),
+            DefaultElement(config_group="delete", config_name="d2", parent="this_test"),
             [
-                DefaultElement(config_group="delete", config_name="d2"),
+                DefaultElement(
+                    config_group="delete", config_name="d2", parent="this_test"
+                ),
                 DefaultElement(
                     config_group="b",
                     config_name="b1",
                     is_deleted=True,
                     skip_load=True,
                     skip_load_reason="deleted_from_list",
+                    parent="delete/d2",
                 ),
             ],
             id="delete_with_tilda",
         ),
         pytest.param(
-            DefaultElement(config_group="delete", config_name="d3"),
+            DefaultElement(config_group="delete", config_name="d3", parent="this_test"),
             [
-                DefaultElement(config_group="delete", config_name="d3"),
+                DefaultElement(
+                    config_group="delete", config_name="d3", parent="this_test"
+                ),
                 DefaultElement(
                     config_group="b",
                     config_name="b1",
                     is_deleted=True,
                     skip_load=True,
                     skip_load_reason="deleted_from_list",
+                    parent="delete/d3",
                 ),
             ],
             id="delete_with_tilda_k=v",
         ),
         pytest.param(
-            DefaultElement(config_group="delete", config_name="d4"),
+            DefaultElement(config_group="delete", config_name="d4", parent="this_test"),
             [
-                DefaultElement(config_group="delete", config_name="d4"),
-                DefaultElement(config_group="b", config_name="b1"),
+                DefaultElement(
+                    config_group="delete",
+                    config_name="d4",
+                    parent="this_test",
+                ),
+                DefaultElement(
+                    config_group="b",
+                    config_name="b1",
+                    parent="delete/d4",
+                ),
             ],
             id="file_delete_not_mandatory",
         ),
         pytest.param(
-            DefaultElement(config_group="delete", config_name="d5"),
+            DefaultElement(config_group="delete", config_name="d5", parent="this_test"),
             [
-                DefaultElement(config_group="delete", config_name="d5"),
-                DefaultElement(config_group="b", config_name="b1"),
+                DefaultElement(
+                    config_group="delete", config_name="d5", parent="this_test"
+                ),
+                DefaultElement(config_group="b", config_name="b1", parent="delete/d5"),
             ],
             id="file_delete_not_mandatory",
         ),
         pytest.param(
-            DefaultElement(config_group="delete", config_name="d7"),
+            DefaultElement(config_group="delete", config_name="d7", parent="this_test"),
             [
-                DefaultElement(config_group="delete", config_name="d7"),
-                DefaultElement(config_group="b", config_name="b1"),
+                DefaultElement(
+                    config_group="delete", config_name="d7", parent="this_test"
+                ),
+                DefaultElement(config_group="b", config_name="b1", parent="delete/d7"),
             ],
             id="file_delete_not_mandatory",
         ),
         pytest.param(
-            DefaultElement(config_group="delete", config_name="d6"),
+            DefaultElement(config_group="delete", config_name="d6", parent="this_test"),
             [
-                DefaultElement(config_group="delete", config_name="d6"),
+                DefaultElement(
+                    config_group="delete",
+                    config_name="d6",
+                    parent="this_test",
+                ),
                 DefaultElement(
                     config_group="b",
                     config_name="b1",
                     is_deleted=True,
                     skip_load=True,
                     skip_load_reason="deleted_from_list",
+                    parent="delete/d6",
                 ),
-                DefaultElement(config_group="b", config_name="b3"),
+                DefaultElement(
+                    config_group="b",
+                    config_name="b3",
+                    parent="delete/d6",
+                ),
             ],
             id="specific_delete",
         ),
         pytest.param(
-            DefaultElement(config_group="delete", config_name="d8"),
+            DefaultElement(config_group="delete", config_name="d8", parent="this_test"),
             [
-                DefaultElement(config_group="delete", config_name="d8"),
-                DefaultElement(config_group="b", config_name="b2"),
+                DefaultElement(
+                    config_group="delete", config_name="d8", parent="this_test"
+                ),
+                DefaultElement(config_group="b", config_name="b2", parent="delete/d8"),
                 DefaultElement(
                     config_group="c",
                     config_name="c2",
                     is_deleted=True,
                     skip_load=True,
                     skip_load_reason="deleted_from_list",
+                    parent="b/b2",
                 ),
             ],
             id="delete_from_included",
@@ -328,55 +463,113 @@ Plugins.instance()
         ),
         # interpolation
         pytest.param(
-            DefaultElement(config_group="interpolation", config_name="i1"),
+            DefaultElement(
+                config_group="interpolation",
+                config_name="i1",
+                parent="this_test",
+            ),
             [
-                DefaultElement(config_group="interpolation", config_name="i1"),
-                DefaultElement(config_group="a", config_name="a1"),
-                DefaultElement(config_group="b", config_name="b1"),
-                DefaultElement(config_group="a_b", config_name="a1_b1"),
+                DefaultElement(
+                    config_group="interpolation",
+                    config_name="i1",
+                    parent="this_test",
+                ),
+                DefaultElement(
+                    config_group="a",
+                    config_name="a1",
+                    parent="interpolation/i1",
+                ),
+                DefaultElement(
+                    config_group="b",
+                    config_name="b1",
+                    parent="interpolation/i1",
+                ),
+                DefaultElement(
+                    config_group="a_b",
+                    config_name="a1_b1",
+                    parent="interpolation/i1",
+                ),
             ],
             id="interpolation",
         ),
         pytest.param(
             DefaultElement(
-                config_group="interpolation", config_name="i2_legacy_with_self"
+                config_group="interpolation",
+                config_name="i2_legacy_with_self",
+                parent="this_test",
             ),
             [
                 DefaultElement(
-                    config_group="interpolation", config_name="i2_legacy_with_self"
+                    config_group="interpolation",
+                    config_name="i2_legacy_with_self",
+                    parent="this_test",
                 ),
-                DefaultElement(config_group="a", config_name="a1"),
-                DefaultElement(config_group="b", config_name="b1"),
-                DefaultElement(config_group="a_b", config_name="a1_b1"),
+                DefaultElement(
+                    config_group="a",
+                    config_name="a1",
+                    parent="interpolation/i2_legacy_with_self",
+                ),
+                DefaultElement(
+                    config_group="b",
+                    config_name="b1",
+                    parent="interpolation/i2_legacy_with_self",
+                ),
+                DefaultElement(
+                    config_group="a_b",
+                    config_name="a1_b1",
+                    parent="interpolation/i2_legacy_with_self",
+                ),
             ],
             id="interpolation",
         ),
         pytest.param(
             DefaultElement(
-                config_group="interpolation", config_name="i3_legacy_without_self"
+                config_group="interpolation",
+                config_name="i3_legacy_without_self",
+                parent="this_test",
             ),
             [
                 DefaultElement(
-                    config_group="interpolation", config_name="i3_legacy_without_self"
+                    config_group="interpolation",
+                    config_name="i3_legacy_without_self",
+                    parent="this_test",
                 ),
-                DefaultElement(config_group="a", config_name="a1"),
-                DefaultElement(config_group="b", config_name="b1"),
-                DefaultElement(config_group="a_b", config_name="a1_b1"),
+                DefaultElement(
+                    config_group="a",
+                    config_name="a1",
+                    parent="interpolation/i3_legacy_without_self",
+                ),
+                DefaultElement(
+                    config_group="b",
+                    config_name="b1",
+                    parent="interpolation/i3_legacy_without_self",
+                ),
+                DefaultElement(
+                    config_group="a_b",
+                    config_name="a1_b1",
+                    parent="interpolation/i3_legacy_without_self",
+                ),
             ],
             id="interpolation",
         ),
         # optional
         pytest.param(
-            DefaultElement(config_name="with_optional"),
+            DefaultElement(config_name="with_optional", parent="this_test"),
             [
-                DefaultElement(config_name="with_optional"),
-                DefaultElement(config_group="a", config_name="a1", optional=True),
+                DefaultElement(config_name="with_optional", parent="this_test"),
+                DefaultElement(
+                    config_group="a",
+                    config_name="a1",
+                    optional=True,
+                    parent="with_optional",
+                ),
                 DefaultElement(
                     config_group="foo",
                     config_name="bar",
                     optional=True,
                     skip_load=True,
                     skip_load_reason="missing_optional_config",
+                    parent="with_optional",
                 ),
             ],
             id="optional",
@@ -430,34 +623,44 @@ def test_compute_element_defaults_list(
     [
         pytest.param(
             [
-                DefaultElement(config_group="a", config_name="a1"),
-                DefaultElement(config_group="a", config_name="a6"),
+                DefaultElement(config_group="a", config_name="a1", parent="foo"),
+                DefaultElement(config_group="a", config_name="a6", parent="bar"),
             ],
             [
-                DefaultElement(config_group="a", config_name="a6"),
-            ],
-            id="simple",
-        ),
-        pytest.param(
-            [
-                DefaultElement(config_group="a", config_name="a2"),
-                DefaultElement(config_group="a", config_name="a6"),
-            ],
-            [
-                DefaultElement(config_group="a", config_name="a6"),
+                DefaultElement(config_group="a", config_name="a6", parent="foo"),
             ],
             id="simple",
         ),
         pytest.param(
             [
-                DefaultElement(config_group="a", config_name="a5"),
-                DefaultElement(config_group="b", config_name="b1"),
-                DefaultElement(config_group="b", package="file_pkg", config_name="b1"),
+                DefaultElement(config_group="a", config_name="a2", parent="foo"),
+                DefaultElement(config_group="a", config_name="a6", parent="bar"),
             ],
             [
-                DefaultElement(config_group="a", config_name="a5"),
-                DefaultElement(config_group="b", config_name="b1"),
-                DefaultElement(config_group="b", config_name="b1", package="file_pkg"),
+                DefaultElement(config_group="a", config_name="a6", parent="foo"),
+            ],
+            id="simple",
+        ),
+        pytest.param(
+            [
+                DefaultElement(config_group="a", config_name="a5", parent="foo"),
+                DefaultElement(config_group="b", config_name="b1", parent="bar"),
+                DefaultElement(
+                    config_group="b",
+                    package="file_pkg",
+                    config_name="b1",
+                    parent="zoo",
+                ),
+            ],
+            [
+                DefaultElement(config_group="a", config_name="a5", parent="foo"),
+                DefaultElement(config_group="b", config_name="b1", parent="a/a5"),
+                DefaultElement(
+                    config_group="b",
+                    config_name="b1",
+                    package="file_pkg",
+                    parent="a/a5",
+                ),
             ],
             id="a/a5",
         ),
@@ -484,10 +687,21 @@ def test_expand_defaults_list(
             "test_overrides",
             ["a=a6"],
             [
-                DefaultElement(config_name="test_overrides"),
-                DefaultElement(config_group="a", config_name="a6"),
-                DefaultElement(config_group="a", package="pkg", config_name="a1"),
-                DefaultElement(config_group="c", config_name="c1"),
+                DefaultElement(config_name="test_overrides", parent="this_test"),
+                DefaultElement(
+                    config_group="a",
+                    config_name="a6",
+                    parent="test_overrides",
+                ),
+                DefaultElement(
+                    config_group="a",
+                    package="pkg",
+                    config_name="a1",
+                    parent="test_overrides",
+                ),
+                DefaultElement(
+                    config_group="c", config_name="c1", parent="test_overrides"
+                ),
             ],
             id="change_option",
         ),
@@ -495,10 +709,22 @@ def test_expand_defaults_list(
             "test_overrides",
             ["a@:pkg2=a6"],
             [
-                DefaultElement(config_name="test_overrides"),
-                DefaultElement(config_group="a", package="pkg2", config_name="a6"),
-                DefaultElement(config_group="a", package="pkg", config_name="a1"),
-                DefaultElement(config_group="c", config_name="c1"),
+                DefaultElement(config_name="test_overrides", parent="this_test"),
+                DefaultElement(
+                    config_group="a",
+                    package="pkg2",
+                    config_name="a6",
+                    parent="test_overrides",
+                ),
+                DefaultElement(
+                    config_group="a",
+                    package="pkg",
+                    config_name="a1",
+                    parent="test_overrides",
+                ),
+                DefaultElement(
+                    config_group="c", config_name="c1", parent="test_overrides"
+                ),
             ],
             id="change_both",
         ),
@@ -506,10 +732,19 @@ def test_expand_defaults_list(
             "test_overrides",
             ["a@pkg:pkg2=a6"],
             [
-                DefaultElement(config_name="test_overrides"),
-                DefaultElement(config_group="a", config_name="a1"),
-                DefaultElement(config_group="a", package="pkg2", config_name="a6"),
-                DefaultElement(config_group="c", config_name="c1"),
+                DefaultElement(config_name="test_overrides", parent="this_test"),
+                DefaultElement(
+                    config_group="a", config_name="a1", parent="test_overrides"
+                ),
+                DefaultElement(
+                    config_group="a",
+                    package="pkg2",
+                    config_name="a6",
+                    parent="test_overrides",
+                ),
+                DefaultElement(
+                    config_group="c", config_name="c1", parent="test_overrides"
+                ),
             ],
             id="change_both",
         ),
@@ -529,8 +764,13 @@ def test_expand_defaults_list(
             "no_defaults",
             ["+b=b1"],
             [
-                DefaultElement(config_name="no_defaults"),
-                DefaultElement(config_group="b", config_name="b1", is_add_only=True),
+                DefaultElement(config_name="no_defaults", parent="this_test"),
+                DefaultElement(
+                    config_group="b",
+                    config_name="b1",
+                    is_add_only=True,
+                    parent="overrides",
+                ),
             ],
             id="adding_item",
         ),
@@ -538,9 +778,9 @@ def test_expand_defaults_list(
             "no_defaults",
             ["+b=b2"],
             [
-                DefaultElement(config_name="no_defaults"),
-                DefaultElement(config_group="b", config_name="b2"),
-                DefaultElement(config_group="c", config_name="c2"),
+                DefaultElement(config_name="no_defaults", parent="this_test"),
+                DefaultElement(config_group="b", config_name="b2", parent="overrides"),
+                DefaultElement(config_group="c", config_name="c2", parent="b/b2"),
             ],
             id="adding_item_recursive",
         ),
@@ -548,12 +788,27 @@ def test_expand_defaults_list(
             "test_overrides",
             ["+b@pkg=b1"],
             [
-                DefaultElement(config_name="test_overrides"),
-                DefaultElement(config_group="a", config_name="a1"),
-                DefaultElement(config_group="a", package="pkg", config_name="a1"),
-                DefaultElement(config_group="c", config_name="c1"),
+                DefaultElement(config_name="test_overrides", parent="this_test"),
                 DefaultElement(
-                    config_group="b", package="pkg", config_name="b1", is_add_only=True
+                    config_group="a",
+                    config_name="a1",
+                    parent="test_overrides",
+                ),
+                DefaultElement(
+                    config_group="a",
+                    package="pkg",
+                    config_name="a1",
+                    parent="test_overrides",
+                ),
+                DefaultElement(
+                    config_group="c", config_name="c1", parent="test_overrides"
+                ),
+                DefaultElement(
+                    config_group="b",
+                    package="pkg",
+                    config_name="b1",
+                    is_add_only=True,
+                    parent="overrides",
                 ),
             ],
             id="adding_item_at_package",
@@ -663,16 +918,24 @@ def test_expand_defaults_list(
             "test_overrides",
             ["~a"],
             [
-                DefaultElement(config_name="test_overrides"),
+                DefaultElement(config_name="test_overrides", parent="this_test"),
                 DefaultElement(
                     config_group="a",
                     config_name="a1",
                     is_deleted=True,
                     skip_load=True,
                     skip_load_reason="deleted_from_list",
+                    parent="test_overrides",
                 ),
-                DefaultElement(config_group="a", package="pkg", config_name="a1"),
-                DefaultElement(config_group="c", config_name="c1"),
+                DefaultElement(
+                    config_group="a",
+                    package="pkg",
+                    config_name="a1",
+                    parent="test_overrides",
+                ),
+                DefaultElement(
+                    config_group="c", config_name="c1", parent="test_overrides"
+                ),
             ],
             id="delete ~a",
         ),
@@ -680,16 +943,24 @@ def test_expand_defaults_list(
             "test_overrides",
             ["~a=a1"],
             [
-                DefaultElement(config_name="test_overrides"),
+                DefaultElement(config_name="test_overrides", parent="this_test"),
                 DefaultElement(
                     config_group="a",
                     config_name="a1",
                     is_deleted=True,
                     skip_load=True,
                     skip_load_reason="deleted_from_list",
+                    parent="test_overrides",
                 ),
-                DefaultElement(config_group="a", package="pkg", config_name="a1"),
-                DefaultElement(config_group="c", config_name="c1"),
+                DefaultElement(
+                    config_group="a",
+                    package="pkg",
+                    config_name="a1",
+                    parent="test_overrides",
+                ),
+                DefaultElement(
+                    config_group="c", config_name="c1", parent="test_overrides"
+                ),
             ],
             id="delete ~a=a1",
         ),
@@ -719,8 +990,10 @@ def test_expand_defaults_list(
             "test_overrides",
             ["~a@pkg"],
             [
-                DefaultElement(config_name="test_overrides"),
-                DefaultElement(config_group="a", config_name="a1"),
+                DefaultElement(config_name="test_overrides", parent="this_test"),
+                DefaultElement(
+                    config_group="a", config_name="a1", parent="test_overrides"
+                ),
                 DefaultElement(
                     config_group="a",
                     package="pkg",
@@ -728,8 +1001,11 @@ def test_expand_defaults_list(
                     is_deleted=True,
                     skip_load=True,
                     skip_load_reason="deleted_from_list",
+                    parent="test_overrides",
                 ),
-                DefaultElement(config_group="c", config_name="c1"),
+                DefaultElement(
+                    config_group="c", config_name="c1", parent="test_overrides"
+                ),
             ],
             id="delete ~a@pkg",
         ),
@@ -737,7 +1013,7 @@ def test_expand_defaults_list(
             "no_defaults",
             ["a=foo", "~a"],
             [
-                DefaultElement(config_name="no_defaults"),
+                DefaultElement(config_name="no_defaults", parent="this_test"),
                 DefaultElement(
                     config_group="a",
                     config_name="foo",
@@ -745,6 +1021,7 @@ def test_expand_defaults_list(
                     is_deleted=True,
                     skip_load=True,
                     skip_load_reason="deleted_from_list",
+                    parent="overrides",
                 ),
             ],
             id="delete_after_set_from_overrides",
@@ -753,16 +1030,24 @@ def test_expand_defaults_list(
             "test_overrides",
             ["a=foo", "~a"],
             [
-                DefaultElement(config_name="test_overrides"),
+                DefaultElement(config_name="test_overrides", parent="this_test"),
                 DefaultElement(
                     config_group="a",
                     config_name="a1",
                     is_deleted=True,
                     skip_load=True,
                     skip_load_reason="deleted_from_list",
+                    parent="test_overrides",
                 ),
-                DefaultElement(config_group="a", package="pkg", config_name="a1"),
-                DefaultElement(config_group="c", config_name="c1"),
+                DefaultElement(
+                    config_group="a",
+                    package="pkg",
+                    config_name="a1",
+                    parent="test_overrides",
+                ),
+                DefaultElement(
+                    config_group="c", config_name="c1", parent="test_overrides"
+                ),
                 DefaultElement(
                     config_group="a",
                     config_name="foo",
@@ -770,6 +1055,7 @@ def test_expand_defaults_list(
                     skip_load=True,
                     skip_load_reason="deleted_from_list",
                     from_override=True,
+                    parent="overrides",
                 ),
             ],
             id="delete_after_set_from_overrides",
@@ -778,8 +1064,8 @@ def test_expand_defaults_list(
             "delete/d10",
             ["b=b1"],
             [
-                DefaultElement(config_name="delete/d10"),
-                DefaultElement(config_group="b", config_name="b1"),
+                DefaultElement(config_name="delete/d10", parent="this_test"),
+                DefaultElement(config_group="b", config_name="b1", parent="delete/d10"),
             ],
             id="override_deletion",
         ),
@@ -824,10 +1110,16 @@ def test_expand_defaults_list(
             "interpolation/i1",
             [],
             [
-                DefaultElement(config_name="interpolation/i1"),
-                DefaultElement(config_group="a", config_name="a1"),
-                DefaultElement(config_group="b", config_name="b1"),
-                DefaultElement(config_group="a_b", config_name="a1_b1"),
+                DefaultElement(config_name="interpolation/i1", parent="this_test"),
+                DefaultElement(
+                    config_group="a", config_name="a1", parent="interpolation/i1"
+                ),
+                DefaultElement(
+                    config_group="b", config_name="b1", parent="interpolation/i1"
+                ),
+                DefaultElement(
+                    config_group="a_b", config_name="a1_b1", parent="interpolation/i1"
+                ),
             ],
             id="interpolation",
         ),
@@ -835,10 +1127,16 @@ def test_expand_defaults_list(
             "interpolation/i1",
             ["a=a6"],
             [
-                DefaultElement(config_name="interpolation/i1"),
-                DefaultElement(config_group="a", config_name="a6"),
-                DefaultElement(config_group="b", config_name="b1"),
-                DefaultElement(config_group="a_b", config_name="a6_b1"),
+                DefaultElement(config_name="interpolation/i1", parent="this_test"),
+                DefaultElement(
+                    config_group="a", config_name="a6", parent="interpolation/i1"
+                ),
+                DefaultElement(
+                    config_group="b", config_name="b1", parent="interpolation/i1"
+                ),
+                DefaultElement(
+                    config_group="a_b", config_name="a6_b1", parent="interpolation/i1"
+                ),
             ],
             id="interpolation",
         ),
@@ -846,10 +1144,24 @@ def test_expand_defaults_list(
             "interpolation/i2_legacy_with_self",
             ["a=a6"],
             [
-                DefaultElement(config_name="interpolation/i2_legacy_with_self"),
-                DefaultElement(config_group="a", config_name="a6"),
-                DefaultElement(config_group="b", config_name="b1"),
-                DefaultElement(config_group="a_b", config_name="a6_b1"),
+                DefaultElement(
+                    config_name="interpolation/i2_legacy_with_self", parent="this_test"
+                ),
+                DefaultElement(
+                    config_group="a",
+                    config_name="a6",
+                    parent="interpolation/i2_legacy_with_self",
+                ),
+                DefaultElement(
+                    config_group="b",
+                    config_name="b1",
+                    parent="interpolation/i2_legacy_with_self",
+                ),
+                DefaultElement(
+                    config_group="a_b",
+                    config_name="a6_b1",
+                    parent="interpolation/i2_legacy_with_self",
+                ),
             ],
             id="interpolation",
         ),
@@ -857,10 +1169,25 @@ def test_expand_defaults_list(
             "interpolation/i3_legacy_without_self",
             ["a=a6"],
             [
-                DefaultElement(config_name="interpolation/i3_legacy_without_self"),
-                DefaultElement(config_group="a", config_name="a6"),
-                DefaultElement(config_group="b", config_name="b1"),
-                DefaultElement(config_group="a_b", config_name="a6_b1"),
+                DefaultElement(
+                    config_name="interpolation/i3_legacy_without_self",
+                    parent="this_test",
+                ),
+                DefaultElement(
+                    config_group="a",
+                    config_name="a6",
+                    parent="interpolation/i3_legacy_without_self",
+                ),
+                DefaultElement(
+                    config_group="b",
+                    config_name="b1",
+                    parent="interpolation/i3_legacy_without_self",
+                ),
+                DefaultElement(
+                    config_group="a_b",
+                    config_name="a6_b1",
+                    parent="interpolation/i3_legacy_without_self",
+                ),
             ],
             id="interpolation",
         ),
@@ -882,7 +1209,7 @@ def test_apply_overrides_to_defaults(
         parsed_overrides = parser.parse_overrides(overrides=overrides)
         overrides_as_defaults = convert_overrides_to_defaults(parsed_overrides)
         ret = [
-            DefaultElement(config_name=config_with_defaults),
+            DefaultElement(config_name=config_with_defaults, parent="this_test"),
         ]
         ret.extend(overrides_as_defaults)
         return ret
@@ -901,14 +1228,15 @@ def test_apply_overrides_to_defaults(
     "element,expected",
     [
         pytest.param(
-            DefaultElement(config_name="with_missing"),
+            DefaultElement(config_name="with_missing", parent="this_test"),
             [
-                DefaultElement(config_name="with_missing"),
+                DefaultElement(config_name="with_missing", parent="this_test"),
                 DefaultElement(
                     config_group="a",
                     config_name="???",
                     skip_load=True,
                     skip_load_reason="missing_skipped",
+                    parent="with_missing",
                 ),
             ],
             id="with_missing",

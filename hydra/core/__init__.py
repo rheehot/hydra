@@ -12,6 +12,7 @@ class DefaultElement:
     optional: bool = False
     package: Optional[str] = None
 
+    # TODO: remove default value for parent?
     # name of parent. could be the config full name or 'overrides'
     parent: Optional[str] = None
 
@@ -97,7 +98,7 @@ class DefaultElement:
         if self.parent is None:
             return ret
         else:
-            return f"{ret} [parent={self.parent}]"
+            return f"from={self.parent}::{ret}"
 
     def is_package_rename(self) -> bool:
         return self.package2 is not None

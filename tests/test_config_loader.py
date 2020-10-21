@@ -491,6 +491,7 @@ class TestConfigLoader:
         assert sweep_cfg.home == os.getenv("HOME")
 
 
+# TODO : cleanup
 @pytest.mark.parametrize(  # type:ignore
     "in_primary,in_merged,expected",
     [
@@ -869,6 +870,7 @@ config_parse_error_msg = (
 defaults_list = [{"db": "mysql"}, {"db@src": "mysql"}, {"hydra/launcher": "basic"}]
 
 
+# TODO: delete this test (superceded by test_new_defaults_list)
 @pytest.mark.parametrize(  # type: ignore
     "input_defaults,overrides,expected",
     [
@@ -1047,14 +1049,15 @@ def test_apply_overrides_to_defaults(
     input_defaults: List[str], overrides: List[str], expected: Any
 ) -> None:
     defaults = ConfigSource._extract_defaults_list(
-        OmegaConf.create({"defaults": input_defaults})
+        config_path=None,
+        cfg=OmegaConf.create({"defaults": input_defaults}),
     )
 
     parser = OverridesParser.create()
     if isinstance(expected, list):
         parsed_overrides = parser.parse_overrides(overrides=overrides)
         expected_defaults = ConfigSource._extract_defaults_list(
-            OmegaConf.create({"defaults": expected})
+            config_path=None, cfg=OmegaConf.create({"defaults": expected})
         )
         ConfigLoaderImpl._apply_overrides_to_defaults(
             overrides=parsed_overrides, defaults=defaults
@@ -1076,7 +1079,7 @@ def test_delete_by_assigning_null_is_deprecated() -> None:
     )
 
     defaults = ConfigSource._extract_defaults_list(
-        OmegaConf.create({"defaults": [{"db": "mysql"}]})
+        config_path="foo/bar", cfg=OmegaConf.create({"defaults": [{"db": "mysql"}]})
     )
 
     parser = OverridesParser.create()

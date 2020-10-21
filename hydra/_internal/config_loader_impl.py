@@ -275,7 +275,11 @@ class ConfigLoaderImpl(ConfigLoader):
                 del hydra_cfg["defaults"]
 
         if config_name is not None:
-            defaults.append(DefaultElement(config_group=None, config_name="__SELF__"))
+            defaults.append(
+                DefaultElement(
+                    config_group=None, config_name="__SELF__", parent="primary-config"
+                )
+            )
         split_at = len(defaults)
 
         self._combine_default_lists(defaults, job_defaults)
@@ -365,10 +369,14 @@ class ConfigLoaderImpl(ConfigLoader):
         config_group_overrides = split_res.config_group_overrides
         config_overrides = split_res.config_overrides
 
-        input_defaults = [DefaultElement(config_name="hydra_config")]
+        input_defaults = [DefaultElement(config_name="hydra_config", parent=None)]
 
         if config_name is not None:
-            input_defaults.append(DefaultElement(config_name=config_name, primary=True))
+            input_defaults.append(
+                DefaultElement(
+                    config_name=config_name, primary=True, parent="primary-config"
+                )
+            )
 
         for default in convert_overrides_to_defaults(config_group_overrides):
             input_defaults.append(default)
@@ -572,6 +580,7 @@ class ConfigLoaderImpl(ConfigLoader):
                         config_group=override.key_or_group,
                         config_name=str(value),
                         package=override.get_subject_package(),
+                        parent=None,
                     )
                 )
             else:

@@ -205,19 +205,37 @@ class ConfigSourceTestSuite:
             param(
                 "config_with_defaults_list",
                 {"key": "value"},
-                [DefaultElement(config_group="dataset", config_name="imagenet")],
+                [
+                    DefaultElement(
+                        config_group="dataset",
+                        config_name="imagenet",
+                        parent="config_with_defaults_list",
+                    )
+                ],
                 id="config_with_defaults_list",
             ),
             param(
                 "configs_with_defaults_list/global_package",
                 {"configs_with_defaults_list": {"x": 10}},
-                [DefaultElement(config_group="foo", config_name="bar")],
+                [
+                    DefaultElement(
+                        config_group="foo",
+                        config_name="bar",
+                        parent="configs_with_defaults_list/global_package",
+                    )
+                ],
                 id="configs_with_defaults_list/global_package",
             ),
             param(
                 "configs_with_defaults_list/group_package",
                 {"configs_with_defaults_list": {"x": 10}},
-                [DefaultElement(config_group="foo", config_name="bar")],
+                [
+                    DefaultElement(
+                        config_group="foo",
+                        config_name="bar",
+                        parent="configs_with_defaults_list/group_package",
+                    )
+                ],
                 id="configs_with_defaults_list/group_package",
             ),
         ],
@@ -311,5 +329,9 @@ class ConfigSourceTestSuite:
             config_path="config_with_defaults_list", is_primary_config=True
         )
         assert ret.defaults_list == [
-            DefaultElement(config_group="dataset", config_name="imagenet")
+            DefaultElement(
+                config_group="dataset",
+                config_name="imagenet",
+                parent="config_with_defaults_list",
+            )
         ]

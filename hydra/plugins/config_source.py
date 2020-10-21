@@ -241,7 +241,7 @@ class ConfigSource(Plugin):
 
     @staticmethod
     def _create_defaults_list(
-        config_path: str, defaults: ListConfig
+        config_path: Optional[str], defaults: ListConfig
     ) -> List[DefaultElement]:
         # TODO: exception should contain the name of the config with the bad defaults list
         valid_example = """
@@ -319,16 +319,23 @@ class ConfigSource(Plugin):
                     package2=package2,
                     optional=optional,
                     is_delete=is_delete,
-                    # parent=config_path,
+                    parent=config_path,
                 )
             elif isinstance(item, str):
                 if item.startswith("~"):
                     item = item[1:]
                     default = DefaultElement(
-                        config_group=item, config_name="_delete_", is_delete=True
+                        config_group=item,
+                        config_name="_delete_",
+                        is_delete=True,
+                        parent=config_path,
                     )
                 else:
-                    default = DefaultElement(config_group=None, config_name=item)
+                    default = DefaultElement(
+                        config_group=None,
+                        config_name=item,
+                        parent=config_path,
+                    )
             else:
                 raise ValueError(
                     f"Unsupported type in defaults : {type(item).__name__}"
@@ -338,7 +345,7 @@ class ConfigSource(Plugin):
 
     @staticmethod
     def _extract_defaults_list(
-        config_path: str, cfg: Container
+        config_path: Optional[str], cfg: Container
     ) -> List[DefaultElement]:
         if not OmegaConf.is_dict(cfg):
             return []

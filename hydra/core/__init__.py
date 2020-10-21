@@ -12,6 +12,9 @@ class DefaultElement:
     optional: bool = False
     package: Optional[str] = None
 
+    # name of parent. could be the config full name or 'overrides'
+    parent: Optional[str] = None
+
     # used in package rename
     package2: Optional[str] = None
 
@@ -89,9 +92,12 @@ class DefaultElement:
             flags.append(f"skip-load:{self.skip_load_reason}")
 
         if len(flags) > 0:
-            return f"{ret} ({','.join(flags)})"
-        else:
+            ret = f"{ret} ({','.join(flags)})"
+
+        if self.parent is None:
             return ret
+        else:
+            return f"{ret} [parent={self.parent}]"
 
     def is_package_rename(self) -> bool:
         return self.package2 is not None

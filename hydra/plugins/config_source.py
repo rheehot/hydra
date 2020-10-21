@@ -240,7 +240,9 @@ class ConfigSource(Plugin):
         return res
 
     @staticmethod
-    def _create_defaults_list(defaults: ListConfig) -> List[DefaultElement]:
+    def _create_defaults_list(
+        config_path: str, defaults: ListConfig
+    ) -> List[DefaultElement]:
         # TODO: exception should contain the name of the config with the bad defaults list
         valid_example = """
         Example of a valid defaults:
@@ -317,6 +319,7 @@ class ConfigSource(Plugin):
                     package2=package2,
                     optional=optional,
                     is_delete=is_delete,
+                    # parent=config_path,
                 )
             elif isinstance(item, str):
                 if item.startswith("~"):
@@ -334,7 +337,9 @@ class ConfigSource(Plugin):
         return res
 
     @staticmethod
-    def _extract_defaults_list(cfg: Container) -> List[DefaultElement]:
+    def _extract_defaults_list(
+        config_path: str, cfg: Container
+    ) -> List[DefaultElement]:
         if not OmegaConf.is_dict(cfg):
             return []
 
@@ -344,6 +349,8 @@ class ConfigSource(Plugin):
                 defaults = cfg.pop("defaults", OmegaConf.create([]))
 
         if len(defaults) > 0:
-            return ConfigSource._create_defaults_list(defaults)
+            return ConfigSource._create_defaults_list(
+                config_path=config_path, defaults=defaults
+            )
         else:
             return []

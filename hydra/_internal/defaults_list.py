@@ -73,7 +73,7 @@ def expand_defaults_list(
     repo: ConfigRepository,
 ) -> List[DefaultElement]:
     return _expand_defaults_list(
-        self_name=None,
+        self_element=None,
         defaults=defaults,
         skip_missing=skip_missing,
         repo=repo,
@@ -115,7 +115,7 @@ def _update_known_state(
 
 
 def _expand_defaults_list(
-    self_name: Optional[str],
+    self_element: Optional[DefaultElement],
     defaults: List[DefaultElement],
     skip_missing: bool,
     repo: ConfigRepository,
@@ -134,7 +134,7 @@ def _expand_defaults_list(
         effective=copy.deepcopy(defaults),
     )
     ret = _expand_defaults_list_impl(
-        self_name=self_name,
+        self_element=self_element,
         defaults_list=dl,
         group_to_choice=group_to_choice,
         delete_groups=delete_groups,
@@ -221,7 +221,7 @@ def _compute_element_defaults_list_impl(
     _validate_self(element, defaults)
 
     return _expand_defaults_list_impl(
-        self_name=element.config_name,
+        self_element=element,
         defaults_list=defaults,
         group_to_choice=group_to_choice,
         delete_groups=delete_groups,
@@ -314,7 +314,7 @@ def is_matching_deletion(
 
 
 def _expand_defaults_list_impl(
-    self_name: Optional[str],
+    self_element: Optional[DefaultElement],
     defaults_list: DefaultsList,
     group_to_choice: DictConfig,
     delete_groups: Dict[DeleteKey, int],
@@ -336,7 +336,7 @@ def _expand_defaults_list_impl(
 
         fqgn = d.fully_qualified_group_name()
         if d.config_name == "_self_":
-            if self_name is None:
+            if self_element is None:
                 raise ConfigCompositionException(
                     "self_name is not specified and defaults list contains a _self_ item"
                 )
@@ -345,7 +345,7 @@ def _expand_defaults_list_impl(
             if fqgn is not None and fqgn in group_to_choice:
                 d.config_name = group_to_choice[fqgn]
             else:
-                d.config_name = self_name
+                d.config_name = self_element.config_name
             added_sublist = [d]
         elif d.is_package_rename():
             added_sublist = [d]  # defer rename

@@ -137,6 +137,9 @@ class HydraConf:
     # Those lists will contain runtime overrides
     overrides: OverridesConf = OverridesConf()
 
+    # the resulting defaults list
+    composition_trace: List[Any] = MISSING
+
     job: JobConf = JobConf()
 
     # populated at runtime

@@ -46,7 +46,6 @@ class SplitOverrides:
 
 
 # TODO: clean up record load crap
-# TODO: include resulting defaults information in generated Hydra config.
 
 
 class ConfigLoaderImpl(ConfigLoader):
@@ -256,7 +255,13 @@ class ConfigLoaderImpl(ConfigLoader):
                 cfg.hydra.overrides.task.append(override.input_line)
                 app_overrides.append(override)
 
-        with open_dict(cfg.hydra.job):
+        with open_dict(cfg.hydra):
+            from hydra import __version__
+
+            cfg.hydra.runtime.version = __version__
+            cfg.hydra.runtime.cwd = os.getcwd()
+
+            cfg.hydra.composition_trace = self.convert_to_composition_trace(defaults)
             if "name" not in cfg.hydra.job:
                 cfg.hydra.job.name = JobRuntime().get("name")
             cfg.hydra.job.override_dirname = get_overrides_dirname(
@@ -269,12 +274,6 @@ class ConfigLoaderImpl(ConfigLoader):
 
             for key in cfg.hydra.job.env_copy:
                 cfg.hydra.job.env_set[key] = os.environ[key]
-
-        with open_dict(cfg):
-            from hydra import __version__
-
-            cfg.hydra.runtime.version = __version__
-            cfg.hydra.runtime.cwd = os.getcwd()
 
         return cfg
 
@@ -409,6 +408,8 @@ class ConfigLoaderImpl(ConfigLoader):
                 f"Config {config_path} must be a Dictionary, got {type(ret).__name__}"
             )
 
+        default.search_path = ret.path
+
         schema_provider = None
         if not ret.is_schema_source:
             schema = None
@@ -505,6 +506,34 @@ class ConfigLoaderImpl(ConfigLoader):
 
     def get_sources(self) -> List[ConfigSource]:
         return self.repository.get_sources()
+
+    @staticmethod
+    def convert_to_composition_trace(
+        defaults: List[DefaultElement],
+    ) -> List[Dict[str, str]]:
+        ret = []
+        for d in defaults:
+
+            cde = {}
+
+            if d.config_group is not None:
+                cde["config_group"] = d.config_group
+
+            cde["config_name"] = d.config_name
+
+            if d.parent is not None:
+                cde["parent"] = d.parent
+
+            if d.get_subject_package() is not None:
+                cde["package"] = d.get_subject_package()
+
+            if d.skip_load:
+                cde["skip_reason"] = d.skip_load_reason
+            else:
+                cde["search_path"] = d.search_path
+
+            ret.append(cde)
+        return ret
 
 
 def get_overrides_dirname(

@@ -249,11 +249,11 @@ def _verify_no_add_conflicts(defaults: List[DefaultElement]) -> None:
         if d.from_override and not d.skip_load and not d.is_delete:
             fqgn = d.fully_qualified_group_name()
             match = _find_match_before(defaults, d)
-            if d.is_add_only and match is not None:
+            if d.is_add and match is not None:
                 raise ConfigCompositionException(
                     f"Could not add '{fqgn}={d.config_name}'. '{fqgn}' is already in the defaults list."
                 )
-            if not d.is_add_only and match is None:
+            if not d.is_add and match is None:
                 msg = (
                     f"Could not override '{fqgn}'. No match in the defaults list."
                     f"\nTo append to your default list use +{fqgn}={d.config_name}"
@@ -493,7 +493,7 @@ def convert_overrides_to_defaults(
                 config_group=override.key_or_group,
                 config_name=value,
                 package=override.pkg1,
-                package2=override.pkg2,
+                rename_package_to=override.pkg2,
                 from_override=True,
                 parent="overrides",
             )
@@ -510,6 +510,6 @@ def convert_overrides_to_defaults(
             default.is_delete = True
 
         if override.is_add():
-            default.is_add_only = True
+            default.is_add = True
         ret.append(default)
     return ret

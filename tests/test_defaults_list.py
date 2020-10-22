@@ -22,7 +22,6 @@ chdir_hydra_root()
 
 # TODO: should error indicate the default is coming from? (overrides, specific file's defaults?)
 # TODO: test delete after package rename and delete before package rename
-# TODO: rename things (not new_defalts_list)
 # TODO: remove support for deleting with =null in the defaults list?
 
 # registers config source plugins
@@ -771,7 +770,7 @@ def test_expand_defaults_list(
                 DefaultElement(
                     config_group="b",
                     config_name="b1",
-                    is_add_only=True,
+                    is_add=True,
                     parent="overrides",
                 ),
             ],
@@ -810,7 +809,7 @@ def test_expand_defaults_list(
                     config_group="b",
                     package="pkg",
                     config_name="b1",
-                    is_add_only=True,
+                    is_add=True,
                     parent="overrides",
                 ),
             ],

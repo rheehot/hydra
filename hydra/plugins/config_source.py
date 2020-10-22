@@ -318,7 +318,7 @@ class ConfigSource(Plugin):
                     config_group=config_group,
                     config_name=config_name,
                     package=package,
-                    package2=package2,
+                    rename_package_to=package2,
                     optional=optional,
                     is_delete=is_delete,
                     parent=config_path,

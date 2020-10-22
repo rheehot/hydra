@@ -1,38 +1,37 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
 import re
 import warnings
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from textwrap import dedent
-from typing import Optional, Pattern
+from typing import Dict, Optional, Pattern
 
-from omegaconf import AnyNode, DictConfig, OmegaConf
+from omegaconf import MISSING, AnyNode, DictConfig, OmegaConf
 
 _legacy_interpolation_pattern: Pattern[str] = re.compile(r"\${defaults\.\d\.")
 
 
 @dataclass
 class DefaultElement:
-    config_name: Optional[str]
     config_group: Optional[str] = None
+    config_name: Optional[str] = None
     optional: bool = False
     package: Optional[str] = None
 
-    # TODO: remove default value for parent?
-    # name of parent. could be the config full name or 'overrides'
     parent: Optional[str] = None
 
     # used in package rename
-    package2: Optional[str] = None
+    rename_package_to: Optional[str] = None
 
     # True for default elements that are from overrides.
     # Those have somewhat different semantics
     from_override: bool = False
 
     # set to True for external overrides with +
-    is_add_only: bool = False
+    is_add: bool = False
 
     # is a delete indicator, used as input
     is_delete: bool = False
+
     # is this default deleted? used as output
     is_deleted: bool = False
 
@@ -41,6 +40,9 @@ class DefaultElement:
 
     skip_load: bool = False
     skip_load_reason: str = ""
+
+    # If loaded, the search path it was loaded from
+    search_path: str = MISSING
 
     def config_path(self) -> str:
         assert self.config_name is not None
@@ -61,9 +63,9 @@ class DefaultElement:
         package = self.package
         if self.is_package_rename():
             if self.package is not None:
-                package = f"{self.package}:{self.package2}"
+                package = f"{self.package}:{self.rename_package_to}"
             else:
-                package = f":{self.package2}"
+                package = f":{self.rename_package_to}"
 
         if self.config_group is None:
             if package is not None:
@@ -76,7 +78,7 @@ class DefaultElement:
             else:
                 ret = f"{self.config_group}={self.config_name}"
 
-        if self.is_add_only:
+        if self.is_add:
             ret = f"+{ret}"
         if self.is_delete:
             ret = f"~{ret}"
@@ -88,7 +90,7 @@ class DefaultElement:
             "is_deleted",
             "optional",
             "from_override",
-            "is_add_only",
+            "is_add",
         ]
         for flag in flag_names:
             if getattr(self, flag):
@@ -106,10 +108,12 @@ class DefaultElement:
             return f"from={self.parent}::{ret}"
 
     def is_package_rename(self) -> bool:
-        return self.package2 is not None
+        return self.rename_package_to is not None
 
     def get_subject_package(self) -> Optional[str]:
-        return self.package if self.package2 is None else self.package2
+        return (
+            self.package if self.rename_package_to is None else self.rename_package_to
+        )
 
     def is_interpolation(self) -> bool:
         """

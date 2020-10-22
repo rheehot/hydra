@@ -22,6 +22,8 @@ chdir_hydra_root()
 
 # TODO: should error indicate the default is coming from? (overrides, specific file's defaults?)
 # TODO: test delete after package rename and delete before package rename
+# TODO: rename things (not new_defalts_list)
+# TODO: remove support for deleting with =null in the defaults list?
 
 # registers config source plugins
 Plugins.instance()

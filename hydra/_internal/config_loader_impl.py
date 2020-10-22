@@ -125,8 +125,7 @@ class ConfigLoaderImpl(ConfigLoader):
             config_overrides=config_overrides,
         )
 
-    # TODO: del once new defaults processing is integrated
-    def missing_config_error(
+    def _missing_config_error(
         self, config_name: Optional[str], msg: str, with_search_path: bool
     ) -> None:
         def add_search_path() -> str:
@@ -167,7 +166,7 @@ class ConfigLoaderImpl(ConfigLoader):
                             f"\nCheck that the config directory '{source.path}' exists and readable"
                         )
 
-                    self.missing_config_error(
+                    self._missing_config_error(
                         config_name=None, msg=msg, with_search_path=False
                     )
 
@@ -199,9 +198,10 @@ class ConfigLoaderImpl(ConfigLoader):
         strict: Optional[bool] = None,
         from_shell: bool = True,
     ) -> DictConfig:
+        self.ensure_main_config_source_available()
         caching_repo = CachingConfigRepository(self.repository)
         if config_name is not None and not caching_repo.config_exists(config_name):
-            self.missing_config_error(
+            self._missing_config_error(
                 config_name=config_name,
                 msg=f"Cannot find primary config : {config_name}, check that it's in your config search path",
                 with_search_path=True,

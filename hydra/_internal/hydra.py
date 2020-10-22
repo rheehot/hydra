@@ -504,9 +504,6 @@ class Hydra:
         :return:
         """
 
-        # TODO: can this happen inside load_configuration?
-        self.config_loader.ensure_main_config_source_available()
-
         cfg = self.config_loader.load_configuration(
             config_name=config_name,
             overrides=overrides,

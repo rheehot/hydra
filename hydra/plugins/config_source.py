@@ -241,8 +241,10 @@ class ConfigSource(Plugin):
 
     @staticmethod
     def _create_defaults_list(
-        config_path: Optional[str], defaults: ListConfig
+        config_path: Optional[str],
+        defaults: ListConfig,
     ) -> List[DefaultElement]:
+
         # TODO: exception should contain the name of the config with the bad defaults list
         valid_example = """
         Example of a valid defaults:

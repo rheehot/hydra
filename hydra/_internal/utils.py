@@ -444,14 +444,14 @@ def get_args_parser() -> argparse.ArgumentParser:
 
     # defer building the completion help string until we actually need to render it
     class LazyCompletionHelp:
-        def __repr__(self):
+        def __repr__(self) -> str:
             return f"Install or Uninstall shell completion:\n{_get_completion_help()}"
 
     parser.add_argument(
         "--shell-completion",
         "-sc",
         action="store_true",
-        help=LazyCompletionHelp(),
+        help=LazyCompletionHelp(),  # type: ignore
     )
 
     parser.add_argument(

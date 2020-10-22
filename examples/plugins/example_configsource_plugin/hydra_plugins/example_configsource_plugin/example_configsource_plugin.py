@@ -64,20 +64,25 @@ class ConfigSourceExample(ConfigSource):
         is_primary_config: bool,
         package_override: Optional[str] = None,
     ) -> ConfigResult:
-        config_path = self._normalize_file_name(config_path)
-        if config_path not in self.configs:
+        normalized_config_path = self._normalize_file_name(config_path)
+
+        if normalized_config_path not in self.configs:
             raise ConfigLoadError("Config not found : " + config_path)
-        header = copy(self.headers[config_path]) if config_path in self.headers else {}
+        header = (
+            copy(self.headers[normalized_config_path])
+            if normalized_config_path in self.headers
+            else {}
+        )
         if "package" not in header:
             header["package"] = ""
 
         self._update_package_in_header(
-            header,
-            config_path,
+            header=header,
+            normalized_config_path=normalized_config_path,
             is_primary_config=is_primary_config,
             package_override=package_override,
         )
-        cfg = OmegaConf.create(self.configs[config_path])
+        cfg = OmegaConf.create(self.configs[normalized_config_path])
         defaults_list = self._extract_defaults_list(config_path=config_path, cfg=cfg)
         return ConfigResult(
             config=self._embed_config(cfg, header["package"]),

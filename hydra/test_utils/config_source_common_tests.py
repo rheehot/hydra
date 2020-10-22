@@ -249,7 +249,6 @@ class ConfigSourceTestSuite:
         expected_config: Any,
         recwarn: Any,
     ) -> None:
-        # TODO: test defaults list presence as well
         assert issubclass(type_, ConfigSource)
         src = type_(provider="foo", path=path)
         if isinstance(expected_config, dict):

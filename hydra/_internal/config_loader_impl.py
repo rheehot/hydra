@@ -19,7 +19,11 @@ from omegaconf.errors import (
     OmegaConfBaseException,
 )
 
-from hydra._internal.config_repository import ConfigRepository
+from hydra._internal.config_repository import (
+    CachingConfigRepository,
+    ConfigRepository,
+    IConfigRepository,
+)
 from hydra._internal.defaults_list import (
     convert_overrides_to_defaults,
     expand_defaults_list,
@@ -349,7 +353,8 @@ class ConfigLoaderImpl(ConfigLoader):
         strict: Optional[bool] = None,
         from_shell: bool = True,
     ) -> DictConfig:
-        if config_name is not None and not self.repository.config_exists(config_name):
+        caching_repo = CachingConfigRepository(self.repository)
+        if config_name is not None and not caching_repo.config_exists(config_name):
             self.missing_config_error(
                 config_name=config_name,
                 msg=f"Cannot find primary config : {config_name}, check that it's in your config search path",
@@ -383,10 +388,12 @@ class ConfigLoaderImpl(ConfigLoader):
 
         skip_missing = run_mode == RunMode.MULTIRUN
         defaults = expand_defaults_list(
-            defaults=input_defaults, skip_missing=skip_missing, repo=self.repository
+            defaults=input_defaults,
+            skip_missing=skip_missing,
+            repo=caching_repo,
         )
 
-        cfg = self._new_merge_defaults_into_config(defaults=defaults)
+        cfg = self._new_merge_defaults_into_config(defaults=defaults, repo=caching_repo)
 
         OmegaConf.set_struct(cfg, strict)
         OmegaConf.set_readonly(cfg.hydra, False)
@@ -420,33 +427,6 @@ class ConfigLoaderImpl(ConfigLoader):
 
             cfg.hydra.runtime.version = __version__
             cfg.hydra.runtime.cwd = os.getcwd()
-
-        # OmegaConf.set_struct(cfg, strict)
-        #
-        # # Apply command line overrides after enabling strict flag
-        # ConfigLoaderImpl._apply_overrides_to_config(config_overrides, cfg)
-        #
-        # app_overrides = []
-        # for override in parsed_overrides:
-        #     if override.is_hydra_override():
-        #         cfg.hydra.overrides.hydra.append(override.input_line)
-        #     else:
-        #         cfg.hydra.overrides.task.append(override.input_line)
-        #         app_overrides.append(override)
-        #
-        # with open_dict(cfg.hydra.job):
-        #     if "name" not in cfg.hydra.job:
-        #         cfg.hydra.job.name = JobRuntime().get("name")
-        #     cfg.hydra.job.override_dirname = get_overrides_dirname(
-        #         overrides=app_overrides,
-        #         kv_sep=cfg.hydra.job.config.override_dirname.kv_sep,
-        #         item_sep=cfg.hydra.job.config.override_dirname.item_sep,
-        #         exclude_keys=cfg.hydra.job.config.override_dirname.exclude_keys,
-        #     )
-        #     cfg.hydra.job.config_name = config_name
-        #
-        #     for key in cfg.hydra.job.env_copy:
-        #         cfg.hydra.job.env_set[key] = os.environ[key]
 
         return cfg
 
@@ -821,10 +801,12 @@ class ConfigLoaderImpl(ConfigLoader):
                 ),
             )
 
-    def _new_load_config_impl(self, default: DefaultElement) -> Optional[ConfigResult]:
+    def _new_load_config_impl(
+        self, default: DefaultElement, repo: IConfigRepository
+    ) -> Optional[ConfigResult]:
         config_path = default.config_path()
         package_override = default.package
-        ret = self.repository.load_config(
+        ret = repo.load_config(
             config_path=config_path,
             is_primary_config=default.primary,
             package_override=package_override,
@@ -840,7 +822,7 @@ class ConfigLoaderImpl(ConfigLoader):
         if not ret.is_schema_source:
             schema = None
             try:
-                schema_source = self.repository.get_schema_source()
+                schema_source = repo.get_schema_source()
                 schema = schema_source.load_config(
                     ConfigSource._normalize_file_name(filename=config_path),
                     is_primary_config=default.primary,
@@ -1031,7 +1013,9 @@ class ConfigLoaderImpl(ConfigLoader):
         return hydra_cfg
 
     def _new_merge_defaults_into_config(
-        self, defaults: List[DefaultElement]
+        self,
+        defaults: List[DefaultElement],
+        repo: IConfigRepository,
     ) -> DictConfig:
         cfg = OmegaConf.create()
         for default in defaults:
@@ -1047,7 +1031,7 @@ class ConfigLoaderImpl(ConfigLoader):
                     ),
 
                 continue
-            loaded = self._new_load_config_impl(default=default)
+            loaded = self._new_load_config_impl(default=default, repo=repo)
             # should not happen, generation of defaults list already verified that this exists
             assert loaded is not None
             merged = OmegaConf.merge(cfg, loaded.config)

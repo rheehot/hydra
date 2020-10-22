@@ -7,7 +7,7 @@ from typing import Dict, List, Optional, Union
 
 from omegaconf import II, DictConfig, OmegaConf
 
-from hydra._internal.config_repository import ConfigRepository
+from hydra._internal.config_repository import IConfigRepository
 from hydra.core import DefaultElement
 from hydra.core.object_type import ObjectType
 from hydra.core.override_parser.types import Override
@@ -35,7 +35,7 @@ class DefaultsList:
 
 def compute_element_defaults_list(
     element: DefaultElement,
-    repo: ConfigRepository,
+    repo: IConfigRepository,
     skip_missing: bool,
 ) -> List[DefaultElement]:
     group_to_choice = OmegaConf.create({})
@@ -70,7 +70,7 @@ def _post_process_deletes(
 def expand_defaults_list(
     defaults: List[DefaultElement],
     skip_missing: bool,
-    repo: ConfigRepository,
+    repo: IConfigRepository,
 ) -> List[DefaultElement]:
     return _expand_defaults_list(
         self_element=None,
@@ -118,7 +118,7 @@ def _expand_defaults_list(
     self_element: Optional[DefaultElement],
     defaults: List[DefaultElement],
     skip_missing: bool,
-    repo: ConfigRepository,
+    repo: IConfigRepository,
 ) -> List[DefaultElement]:
     group_to_choice = OmegaConf.create({})
     delete_groups: Dict[DeleteKey, int] = {}
@@ -175,7 +175,7 @@ def _compute_element_defaults_list_impl(
     group_to_choice: DictConfig,
     delete_groups: Dict[DeleteKey, int],
     skip_missing: bool,
-    repo: ConfigRepository,
+    repo: IConfigRepository,
 ) -> List[DefaultElement]:
     # TODO: Should loaded configs be to cached in the repo to avoid loading more than once?
     #  Ensure new approach does not cause the same config to be loaded more than once.
@@ -321,7 +321,7 @@ def _expand_defaults_list_impl(
     group_to_choice: DictConfig,
     delete_groups: Dict[DeleteKey, int],
     skip_missing: bool,
-    repo: ConfigRepository,
+    repo: IConfigRepository,
 ) -> List[DefaultElement]:
 
     # list order is determined by first instance from that config group
@@ -432,7 +432,7 @@ def _expand_defaults_list_impl(
     return deduped
 
 
-def missing_config_error(repo: ConfigRepository, element: DefaultElement) -> None:
+def missing_config_error(repo: IConfigRepository, element: DefaultElement) -> None:
     options = None
     if element.config_group is not None:
         options = repo.get_group_options(element.config_group, ObjectType.CONFIG)

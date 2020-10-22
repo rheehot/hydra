@@ -520,7 +520,7 @@ Plugins.instance()
                     parent="interpolation/i2_legacy_with_self",
                 ),
             ],
-            id="interpolation",
+            id="interpolation_legacy",
         ),
         pytest.param(
             DefaultElement(
@@ -550,7 +550,7 @@ Plugins.instance()
                     parent="interpolation/i3_legacy_without_self",
                 ),
             ],
-            id="interpolation",
+            id="interpolation_legacy",
         ),
         # optional
         pytest.param(
@@ -600,6 +600,7 @@ def test_compute_element_defaults_list(
     hydra_restore_singletons: Any,
     element: DefaultElement,
     expected: Any,
+    recwarn: Any,
 ) -> None:
 
     csp = ConfigSearchPathImpl()
@@ -1163,7 +1164,7 @@ def test_expand_defaults_list(
                     parent="interpolation/i2_legacy_with_self",
                 ),
             ],
-            id="interpolation",
+            id="interpolation_legacy",
         ),
         pytest.param(
             "interpolation/i3_legacy_without_self",
@@ -1189,7 +1190,7 @@ def test_expand_defaults_list(
                     parent="interpolation/i3_legacy_without_self",
                 ),
             ],
-            id="interpolation",
+            id="interpolation_legacy",
         ),
     ],
 )
@@ -1197,6 +1198,7 @@ def test_apply_overrides_to_defaults(
     config_with_defaults: str,
     overrides: List[str],
     expected: Any,
+    recwarn: Any,  # this tests some deprecated functionality
 ) -> None:
     assert isinstance(config_with_defaults, str)
 
@@ -1255,3 +1257,30 @@ def test_missing_with_skip_missing(
 
     ret = compute_element_defaults_list(element=element, skip_missing=True, repo=repo)
     assert ret == expected
+
+
+@pytest.mark.parametrize(  # type: ignore
+    "element",
+    [
+        pytest.param(
+            DefaultElement(
+                config_group="interpolation", config_name="i2_legacy_with_self"
+            ),
+        ),
+    ],
+)
+def test_legacy_interpolation_are_deprecated(
+    hydra_restore_singletons: Any,
+    element: DefaultElement,
+) -> None:
+    csp = ConfigSearchPathImpl()
+    csp.append(provider="test", path="file://tests/test_data/new_defaults_lists")
+    repo = ConfigRepository(config_search_path=csp)
+    msg = dedent(
+        """
+        Defaults list element 'a_b=${defaults.1.a}_${defaults.2.b}' is using a deprecated interpolation form.
+        See http://hydra.cc/docs/next/upgrades/1.0_to_1.1/defaults_list_interpolation for migration information.
+        """
+    )
+    with pytest.warns(UserWarning, match=re.escape(msg)):
+        compute_element_defaults_list(element=element, skip_missing=True, repo=repo)

@@ -387,13 +387,12 @@ def _expand_defaults_list_impl(
     for element in reversed(result):
         if not element.is_delete:
             delete_if_matching(delete_groups, element)
-    # result[:] = filterfalse(lambda x: x.is_delete, result)
 
     _verify_no_add_conflicts(result)
 
     # prepare a local group_to_choice with the defaults to support
     # legacy interpolations like ${defaults.1.a}
-    # TODO: deprecated this interpolation style in the defaults list
+    # Support for this will be removed in Hydra 1.2
     group_to_choice2 = copy.deepcopy(group_to_choice)
     group_to_choice2.defaults = []
     for d in defaults_list.original:

@@ -1,8 +1,13 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
+import re
+import warnings
 from dataclasses import dataclass
-from typing import Optional
+from textwrap import dedent
+from typing import Optional, Pattern
 
 from omegaconf import AnyNode, DictConfig, OmegaConf
+
+_legacy_interpolation_pattern: Pattern[str] = re.compile(r"\${defaults\.\d\.")
 
 
 @dataclass
@@ -118,6 +123,19 @@ class DefaultElement:
 
     def resolve_interpolation(self, group_to_choice: DictConfig) -> None:
         assert self.config_group is not None
+        if self.config_name is not None:
+            if re.match(_legacy_interpolation_pattern, self.config_name) is not None:
+                msg = dedent(
+                    f"""
+            Defaults list element '{self.fully_qualified_group_name()}={self.config_name}' \
+is using a deprecated interpolation form.
+            See http://hydra.cc/docs/next/upgrades/1.0_to_1.1/defaults_list_interpolation for migration information.
+            """
+                )
+                warnings.warn(
+                    category=UserWarning,
+                    message=msg,
+                )
         node = OmegaConf.create({self.config_group: self.config_name})
         node._set_parent(group_to_choice)
         self.config_name = node[self.config_group]

@@ -125,6 +125,13 @@ module.exports = {
         Upgrades: [
           {
             type: 'category',
+            label: '1.0 to 1.1',
+            items: [
+                'upgrades/1.0_to_1.1/defaults_list_interpolation',
+            ],
+          },
+          {
+            type: 'category',
             label: '0.11 to 1.0',
             items: [
                 'upgrades/0.11_to_1.0/config_path_changes',

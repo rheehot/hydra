@@ -524,8 +524,9 @@ class ConfigLoaderImpl(ConfigLoader):
             if d.parent is not None:
                 cde["parent"] = d.parent
 
-            if d.get_subject_package() is not None:
-                cde["package"] = d.get_subject_package()
+            package = d.get_subject_package()
+            if package is not None:
+                cde["package"] = package
 
             if d.skip_load:
                 cde["skip_reason"] = d.skip_load_reason

@@ -1,9 +1,9 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
 import re
 import warnings
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from textwrap import dedent
-from typing import Dict, Optional, Pattern
+from typing import Optional, Pattern
 
 from omegaconf import MISSING, AnyNode, DictConfig, OmegaConf
 
@@ -12,8 +12,8 @@ _legacy_interpolation_pattern: Pattern[str] = re.compile(r"\${defaults\.\d\.")
 
 @dataclass
 class DefaultElement:
+    config_name: str
     config_group: Optional[str] = None
-    config_name: Optional[str] = None
     optional: bool = False
     package: Optional[str] = None
 

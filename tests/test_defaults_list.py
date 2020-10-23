@@ -20,8 +20,6 @@ from hydra.test_utils.test_utils import chdir_hydra_root
 
 chdir_hydra_root()
 
-# TODO: should error indicate the default is coming from? (overrides, specific file's defaults?)
-# TODO: test delete after package rename and delete before package rename
 # TODO: remove support for deleting with =null in the defaults list?
 
 # registers config source plugins
@@ -462,6 +460,48 @@ Plugins.instance()
             ],
             id="file_delete_not_mandatory",
         ),
+        pytest.param(
+            DefaultElement(config_group="delete", config_name="d11"),
+            [
+                DefaultElement(config_group="delete", config_name="d11"),
+                DefaultElement(
+                    config_group="b",
+                    config_name="b1",
+                    parent="delete/d11",
+                    is_deleted=True,
+                    skip_load=True,
+                    skip_load_reason="deleted_from_list",
+                ),
+                DefaultElement(
+                    config_group="b",
+                    package="pkg1",
+                    config_name="b1",
+                    parent="delete/d11",
+                ),
+            ],
+            id="delete_is_specific",
+        ),
+        pytest.param(
+            DefaultElement(config_group="delete", config_name="d12"),
+            [
+                DefaultElement(config_group="delete", config_name="d12"),
+                DefaultElement(
+                    config_group="b",
+                    config_name="b1",
+                    parent="delete/d12",
+                ),
+                DefaultElement(
+                    config_group="b",
+                    package="pkg1",
+                    config_name="b1",
+                    parent="delete/d12",
+                    is_deleted=True,
+                    skip_load=True,
+                    skip_load_reason="deleted_from_list",
+                ),
+            ],
+            id="delete_is_specific",
+        ),
         # interpolation
         pytest.param(
             DefaultElement(
@@ -594,6 +634,72 @@ Plugins.instance()
                 ),
             ),
             id="missing",
+        ),
+        # delete renamed
+        pytest.param(
+            DefaultElement(config_group="delete_rename", config_name="dr1"),
+            [
+                DefaultElement(config_group="delete_rename", config_name="dr1"),
+                DefaultElement(
+                    config_group="b",
+                    config_name="b1",
+                    parent="delete_rename/dr1",
+                    package="pkg",
+                    is_deleted=True,
+                    skip_load=True,
+                    skip_load_reason="deleted_from_list",
+                ),
+            ],
+            id="delete_src_after_rename_in_file",
+        ),
+        pytest.param(
+            DefaultElement(config_group="delete_rename", config_name="dr2"),
+            [
+                DefaultElement(config_group="delete_rename", config_name="dr2"),
+                DefaultElement(
+                    config_group="b",
+                    config_name="b1",
+                    parent="delete_rename/dr2",
+                    package="pkg",
+                    is_deleted=True,
+                    skip_load=True,
+                    skip_load_reason="deleted_from_list",
+                ),
+            ],
+            id="delete_dst_after_rename_in_file",
+        ),
+        # delete renamed
+        pytest.param(
+            DefaultElement(config_group="delete_rename", config_name="rd1"),
+            [
+                DefaultElement(config_group="delete_rename", config_name="rd1"),
+                DefaultElement(
+                    config_group="b",
+                    config_name="b1",
+                    parent="delete_rename/rd1",
+                    package="pkg",
+                    is_deleted=True,
+                    skip_load=True,
+                    skip_load_reason="deleted_from_list",
+                ),
+            ],
+            id="rename_delete",
+        ),
+        pytest.param(
+            DefaultElement(config_group="delete_rename", config_name="rd2"),
+            [
+                DefaultElement(config_group="delete_rename", config_name="rd2"),
+                DefaultElement(
+                    config_group="b",
+                    config_name="b1",
+                    parent="delete_rename/rd2",
+                    package="pkg",
+                    is_deleted=True,
+                    skip_load=True,
+                    skip_load_reason="deleted_from_list",
+                ),
+            ],
+            id="rename_delete",
         ),
     ],
 )

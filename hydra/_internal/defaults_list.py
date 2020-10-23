@@ -177,12 +177,9 @@ def _compute_element_defaults_list_impl(
     skip_missing: bool,
     repo: IConfigRepository,
 ) -> List[DefaultElement]:
-    # TODO: Should loaded configs be to cached in the repo to avoid loading more than once?
-    #  Ensure new approach does not cause the same config to be loaded more than once.
-
     deleted = delete_if_matching(delete_groups, element)
     if deleted:
-        return []  # TODO: there is another in the caller
+        return []
 
     if element.config_name == "???":
         if skip_missing:

@@ -1,11 +1,13 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
+from textwrap import dedent
+
 import warnings
 
 import re
 
 from abc import abstractmethod
 from dataclasses import dataclass
-from typing import List, Optional, Dict, Tuple
+from typing import List, Optional, Dict, Tuple, MutableSequence
 
 from hydra.core import DefaultElement
 from hydra.errors import HydraException
@@ -244,17 +246,6 @@ class ConfigSource(Plugin):
         config_path: Optional[str],
         defaults: ListConfig,
     ) -> List[DefaultElement]:
-
-        # TODO: exception should contain the name of the config with the bad defaults list
-        valid_example = """
-        Example of a valid defaults:
-        defaults:
-          - dataset: imagenet
-          - model: alexnet
-            optional: true
-          - optimizer: nesterov
-        """
-
         def _split_group(
             group_with_package: str,
         ) -> Tuple[str, Optional[str], Optional[str]]:
@@ -284,10 +275,19 @@ class ConfigSource(Plugin):
 
             return group, package, package2
 
-        if not isinstance(defaults, ListConfig):
+        if not isinstance(defaults, MutableSequence):
             raise ValueError(
-                "defaults must be a list because composition is order sensitive, "
-                + valid_example
+                dedent(
+                    f"""\
+                    Invalid defaults list in '{config_path}', defaults must be a list.
+                    Example of a valid defaults:
+                    defaults:
+                      - dataset: imagenet
+                      - model: alexnet
+                        optional: true
+                      - optimizer: nesterov
+                    """
+                )
             )
 
         res: List[DefaultElement] = []

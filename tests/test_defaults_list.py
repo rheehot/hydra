@@ -1285,3 +1285,33 @@ def test_legacy_interpolation_are_deprecated(
     )
     with pytest.warns(UserWarning, match=re.escape(msg)):
         compute_element_defaults_list(element=element, skip_missing=True, repo=repo)
+
+
+@pytest.mark.parametrize(  # type: ignore
+    "element",
+    [
+        pytest.param(
+            DefaultElement(config_group="a", config_name="invalid_defaults_list"),
+        ),
+    ],
+)
+def test_load_invalid_defaults(
+    hydra_restore_singletons: Any,
+    element: DefaultElement,
+) -> None:
+    csp = ConfigSearchPathImpl()
+    csp.append(provider="test", path="file://tests/test_data/new_defaults_lists")
+    repo = ConfigRepository(config_search_path=csp)
+    msg = dedent(
+        f"""\
+        Invalid defaults list in '{element.config_path()}', defaults must be a list.
+        Example of a valid defaults:
+        defaults:
+          - dataset: imagenet
+          - model: alexnet
+            optional: true
+          - optimizer: nesterov
+        """
+    )
+    with pytest.raises(ValueError, match=re.escape(msg)):
+        compute_element_defaults_list(element=element, skip_missing=True, repo=repo)

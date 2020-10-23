@@ -65,7 +65,7 @@ class ConfigRepository(IConfigRepository):
         )
         return source
 
-    # TODO : why do we need is_primary here?
+    # TODO: Consider cleaning is_primary_config after behavior of @package normalizes
     def load_config(
         self,
         config_path: str,

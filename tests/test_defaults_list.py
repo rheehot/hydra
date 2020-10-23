@@ -20,8 +20,6 @@ from hydra.test_utils.test_utils import chdir_hydra_root
 
 chdir_hydra_root()
 
-# TODO: remove support for deleting with =null in the defaults list?
-
 # registers config source plugins
 Plugins.instance()
 

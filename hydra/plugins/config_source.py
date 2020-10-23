@@ -309,6 +309,17 @@ class ConfigSource(Plugin):
 
                 is_delete = False
                 if config_name is None:
+                    warnings.warn(
+                        category=UserWarning,
+                        message=dedent(
+                            f"""
+                    Deprecated form of deletion used in the defaults list of '{config_path}'.
+                    'group: null' is deprecated, use '~group' instead.
+                    You can also delete group with a specific value with '~group: value'.
+                    Support for the 'group: null' form will be removed in Hydra 1.2.
+                    """
+                        ),
+                    )
                     is_delete = True
                 elif config_group.startswith("~"):
                     is_delete = True
